@@ -99,6 +99,7 @@
   ! surface 
   integer(i_kind) :: tmp2m_ind, spfh2m_ind, soilt1_ind, soilt2_ind, soilt3_ind
   integer(i_kind) :: soilt4_ind,slc1_ind, slc2_ind, slc3_ind, slc4_ind
+  integer(i_kind) :: snowt1_ind, snowt2_ind, snowt3_ind
 
   integer(i_kind) :: k,iret,nb,i,imem,idvc,nlonsin,nlatsin,nlevsin,ne,nanal
   ! surface
@@ -523,6 +524,9 @@
    slc3_ind = getindex(vars2d, 'sl3')
    soilt4_ind = getindex(vars2d, 'st4')
    slc4_ind = getindex(vars2d, 'sl4')
+   snowt1_ind = getindex(vars2d, 'snt1')
+   snowt2_ind = getindex(vars2d, 'snt2')
+   snowt3_ind = getindex(vars2d, 'snt3')
 
    ! read in sfc vars, if requested
    if (tmp2m_ind > 0) then
@@ -615,6 +619,33 @@
        ug = reshape(values_2d,(/nlons*nlats/))
        if (iope==0) call copytogrdin(ug,grdin(:,levels(n3d) + slc4_ind,nb,ne))
    endif
+   if (snowt1_ind > 0) then
+       call read_vardata(dset_sfc, 'snowt1', values_2d, errcode=iret)
+       if (iret /= 0) then
+               print *,'READGRIDDATA_PNC: error reading snowt1'
+               call stop2(22)
+       endif
+       ug = reshape(values_2d,(/nlons*nlats/))
+       if (iope==0) call copytogrdin(ug,grdin(:,levels(n3d) + snowt1_ind,nb,ne))
+   endif
+   if (snowt2_ind > 0) then
+       call read_vardata(dset_sfc, 'snowt2', values_2d, errcode=iret)
+       if (iret /= 0) then
+               print *,'READGRIDDATA_PNC: error reading snowt2'
+               call stop2(22)
+       endif
+       ug = reshape(values_2d,(/nlons*nlats/))
+       if (iope==0) call copytogrdin(ug,grdin(:,levels(n3d) + snowt2_ind,nb,ne))
+   endif
+   if (snowt3_ind > 0) then
+       call read_vardata(dset_sfc, 'snowt3', values_2d, errcode=iret)
+       if (iret /= 0) then
+               print *,'READGRIDDATA_PNC: error reading snowt3'
+               call stop2(22)
+       endif
+       ug = reshape(values_2d,(/nlons*nlats/))
+       if (iope==0) call copytogrdin(ug,grdin(:,levels(n3d) + snowt3_ind,nb,ne))
+   endif
 
    ! bring all the subdomains back to the main PE
    call mpi_barrier(iocomms(mem_pe(nproc)), iret) 
@@ -703,6 +734,7 @@
   integer(i_kind) :: ps_ind, pst_ind, sst_ind
   integer(i_kind) :: tmp2m_ind, spfh2m_ind, soilt1_ind, soilt2_ind, soilt3_ind
   integer(i_kind) :: soilt4_ind,slc1_ind, slc2_ind, slc3_ind, slc4_ind
+  integer(i_kind) :: snowt1_ind, snowt2_ind, snowt3_ind
 
   integer(i_kind) :: k,iunitsig,iret,nb,i,idvc,nlonsin,nlatsin,nlevsin,ne,nanal
   integer(i_kind) :: nlonsin_sfc,nlatsin_sfc
@@ -1275,6 +1307,9 @@
      slc3_ind = getindex(vars2d, 'sl3')
      soilt4_ind = getindex(vars2d, 'st4')
      slc4_ind = getindex(vars2d, 'sl4')
+     snowt1_ind = getindex(vars2d, 'snt1')
+     snowt2_ind = getindex(vars2d, 'snt2')
+     snowt3_ind = getindex(vars2d, 'snt3')
 
      dset_sfc = open_dataset(filenamesfc)
      ! read in sfc vars, if requested
@@ -1367,6 +1402,33 @@
         endif
         ug = reshape(values_2d,(/nlons*nlats/))
         call copytogrdin(ug,grdin(:,levels(n3d) + slc4_ind,nb,ne))
+     endif
+     if (snowt1_ind > 0) then
+        call read_vardata(dset_sfc, 'snowt1', values_2d, errcode=iret)
+        if (iret /= 0) then
+                print *,'error reading snowt1'
+                call stop2(22)
+        endif
+        ug = reshape(values_2d,(/nlons*nlats/))
+        call copytogrdin(ug,grdin(:,levels(n3d) + snowt1_ind,nb,ne))
+     endif
+     if (snowt2_ind > 0) then
+        call read_vardata(dset_sfc, 'snowt2', values_2d, errcode=iret)
+        if (iret /= 0) then
+                print *,'error reading snowt2'
+                call stop2(22)
+        endif
+        ug = reshape(values_2d,(/nlons*nlats/))
+        call copytogrdin(ug,grdin(:,levels(n3d) + snowt2_ind,nb,ne))
+     endif
+     if (snowt3_ind > 0) then
+        call read_vardata(dset_sfc, 'snowt3', values_2d, errcode=iret)
+        if (iret /= 0) then
+                print *,'error reading snowt3'
+                call stop2(22)
+        endif
+        ug = reshape(values_2d,(/nlons*nlats/))
+        call copytogrdin(ug,grdin(:,levels(n3d) + snowt3_ind,nb,ne))
      endif
 
      call close_dataset(dset_sfc)
@@ -3741,6 +3803,8 @@
                      slc3varid, slc4varid, maskvarid
   integer(i_kind) :: tmp2m_ind, spfh2m_ind, soilt1_ind, soilt2_ind, soilt3_ind, &
                      soilt4_ind,slc1_ind, slc2_ind, slc3_ind, slc4_ind
+  integer(i_kind) :: snowt1varid, snowt2varid, snowt3varid
+  integer(i_kind) :: snowt1_ind, snowt2_ind, snowt3_ind
   integer(i_kind) :: iadateout
 
   ! fixed fields such as lat, lon, levs
@@ -4146,6 +4210,9 @@
      call nccheck_incr(nf90_def_var(ncid_out, "slc2_inc", nf90_real, dimids2, slc2varid))
      call nccheck_incr(nf90_def_var(ncid_out, "slc3_inc", nf90_real, dimids2, slc3varid))
      call nccheck_incr(nf90_def_var(ncid_out, "slc4_inc", nf90_real, dimids2, slc4varid))
+     call nccheck_incr(nf90_def_var(ncid_out, "snowt1_inc", nf90_real, dimids2, snowt1varid))
+     call nccheck_incr(nf90_def_var(ncid_out, "snowt2_inc", nf90_real, dimids2, snowt2varid))
+     call nccheck_incr(nf90_def_var(ncid_out, "snowt3_inc", nf90_real, dimids2, snowt3varid))
      call nccheck_incr(nf90_def_var(ncid_out, "soilsnow_mask", nf90_int, dimids2, maskvarid))
      ! place global attributes to serial calc_increment output
      call nccheck_incr(nf90_put_att(ncid_out, nf90_global, "source", "GSI EnKF"))
@@ -4169,6 +4236,9 @@
      slc3_ind = getindex(vars2d, 'sl3')
      soilt4_ind = getindex(vars2d, 'st4')
      slc4_ind = getindex(vars2d, 'sl4')
+     snowt1_ind = getindex(vars2d, 'snt1')
+     snowt2_ind = getindex(vars2d, 'snt2')
+     snowt3_ind = getindex(vars2d, 'snt3')
 
      dsfg = open_dataset(filenamein)
 
@@ -4187,177 +4257,241 @@
      call nccheck_incr(nf90_put_var(ncid_out, latvarid, deglats, &
                           start = (/1/), count = (/nlats/)))
 
-      ! construct mask (1 - soil; 2 - snow over land; and 0 - not soil)
-      ! note: same logic/threshold used in global_cycle to produce
-      ! mask on model grid. Set land to 1
-      call read_vardata(dsfg, 'land', values_2d, errcode=iret)  !sea-land-ice mask 0-sea, 1-land, 2-ice
-      mask = 0
-      do j=1,nlats
-         do i = 1, nlons
-            if (nint(values_2d(i,j)) .EQ. 1) then
-            mask(i,nlats-j+1) = 1
-            endif
-         end do
-      end do
-      ! set snow to 2
-      call read_vardata(dsfg, 'weasd', values_2d, errcode=iret)
-      do j=1,nlats
-         do i = 1, nlons
-            if (values_2d(i,j) .GT. 0.001) then
-            mask(i,nlats-j+1) = 2
-            endif
-         end do
-      end do
-      ! set non-soil (glacier and water) to 0
-      call read_vardata(dsfg, 'vtype', values_2d, errcode=iret)  !vegetation type in integer, missing/fill value 9.99e+20f
-      do j=1,nlats
-         do i = 1, nlons
-            if ((nint(values_2d(i,j)) .EQ. 0) .OR. (nint(values_2d(i,j)) .EQ. 15) ) then
-            mask(i,nlats-j+1) = 0
-            endif
-         end do
-      end do
-      
-      call nccheck_incr(nf90_put_var(ncid_out, maskvarid, mask, &
-                        start = ncstart(1:2), count = nccount(1:2)))
-                        
-      allocate(inc2d(nlons,nlats))
-      allocate(inc2dout(nlons,nlats))                          
+     ! construct mask
+     !  -3: land covered with 3 snow layers
+     !  -2: land covered with 2 snow layers
+     !  -1: land covered with 1 snow layer
+     !   0: ocean/glacier
+     !   1: snow-free land
+     ! note: same logic/threshold used in global_cycle to produce
+     ! mask on model grid.
 
-      ! tmp2m increment
-      inc(:) = zero
-      if (tmp2m_ind > 0) then
-         call copyfromgrdin(grdin(:,levels(n3d) + tmp2m_ind,nb,ne),inc)
-      endif
-      inc2d(:,:) = reshape(inc,(/nlons,nlats/))
-      do j=1,nlats
-         inc2dout(:,nlats-j+1) = inc2d(:,j)
-      end do
-      call nccheck_incr(nf90_put_var(ncid_out, tmp2mvarid, sngl(inc2dout), &
-                           start = ncstart(1:2), count = nccount(1:2)))
-      ! spfh2m increment
-      inc(:) = zero
-      if (spfh2m_ind > 0) then
-         call copyfromgrdin(grdin(:,levels(n3d)+spfh2m_ind,nb,ne),inc)
-      endif
-      inc2d(:,:) = reshape(inc,(/nlons,nlats/))
-      do j=1,nlats
-         inc2dout(:,nlats-j+1) = inc2d(:,j)
-      end do
-      call nccheck_incr(nf90_put_var(ncid_out, spfh2mvarid, sngl(inc2dout), &
-                           start = ncstart(1:2), count = nccount(1:2)))
-      ! soilt1 increment
-      inc(:) = zero
-      if (soilt1_ind > 0) then
-         call copyfromgrdin(grdin(:,levels(n3d)+soilt1_ind,nb,ne),inc)
-      endif
-      inc2d(:,:) = reshape(inc,(/nlons,nlats/))
-      inc2dout=0.
-      do j=1,nlats
-         do i = 1, nlons
-            if (mask(i,nlats-j+1) .EQ. 1) inc2dout(i,nlats-j+1) = inc2d(i,j)
-         enddo
-      end do
-      call nccheck_incr(nf90_put_var(ncid_out, soilt1varid, sngl(inc2dout), &
-                           start = ncstart(1:2), count = nccount(1:2)))
-      ! soilt2 increment
-      inc(:) = zero
-      if (soilt2_ind > 0) then
-         call copyfromgrdin(grdin(:,levels(n3d)+soilt2_ind,nb,ne),inc)
-      endif
-      inc2d(:,:) = reshape(inc,(/nlons,nlats/))
-      inc2dout=0.
-      do j=1,nlats
-         do i = 1, nlons
-            if (mask(i,nlats-j+1) .EQ. 1) inc2dout(i,nlats-j+1) = inc2d(i,j)
-         enddo
-      end do
-      call nccheck_incr(nf90_put_var(ncid_out, soilt2varid, sngl(inc2dout), &
-                           start = ncstart(1:2), count = nccount(1:2)))
-      ! soilt3 increment
-      inc(:) = zero
-      if (soilt3_ind > 0) then
-         call copyfromgrdin(grdin(:,levels(n3d)+soilt3_ind,nb,ne),inc)
-      endif
-      inc2d(:,:) = reshape(inc,(/nlons,nlats/))
-      inc2dout=0.
-      do j=1,nlats
-         do i = 1, nlons
-            if (mask(i,nlats-j+1) .EQ. 1) inc2dout(i,nlats-j+1) = inc2d(i,j)
-         enddo
-      end do
-      call nccheck_incr(nf90_put_var(ncid_out, soilt3varid, sngl(inc2dout), &
-                           start = ncstart(1:2), count = nccount(1:2)))
-      ! soilt4 increment
-      inc(:) = zero
-      if (soilt4_ind > 0) then
-         call copyfromgrdin(grdin(:,levels(n3d)+soilt4_ind,nb,ne),inc)
-      endif
-      inc2d(:,:) = reshape(inc,(/nlons,nlats/))
-      inc2dout=0.
-      do j=1,nlats
-         do i = 1, nlons
-            if (mask(i,nlats-j+1) .EQ. 1) inc2dout(i,nlats-j+1) = inc2d(i,j)
-         end do
-      end do
-      call nccheck_incr(nf90_put_var(ncid_out, soilt4varid, sngl(inc2dout), &
-                           start = ncstart(1:2), count = nccount(1:2)))
-      ! slc1 increment
-      inc(:) = zero
-      if (slc1_ind > 0) then
-         call copyfromgrdin(grdin(:,levels(n3d)+slc1_ind,nb,ne),inc)
-      endif
-      inc2d(:,:) = reshape(inc,(/nlons,nlats/))
-      inc2dout=0.
-      do j=1,nlats
-         do i = 1, nlons
-            if (mask(i,nlats-j+1) .EQ. 1) inc2dout(i,nlats-j+1) = inc2d(i,j)
-         end do
-      end do
-      call nccheck_incr(nf90_put_var(ncid_out, slc1varid, sngl(inc2dout), &
-                           start = ncstart(1:2), count = nccount(1:2)))
-      ! slc2 increment
-      inc(:) = zero
-      if (slc2_ind > 0) then
-         call copyfromgrdin(grdin(:,levels(n3d)+slc2_ind,nb,ne),inc)
-      endif
-      inc2d(:,:) = reshape(inc,(/nlons,nlats/))
-      inc2dout=0.
-      do j=1,nlats
-         do i = 1, nlons
-            if (mask(i,nlats-j+1) .EQ. 1) inc2dout(i,nlats-j+1) = inc2d(i,j)
-         end do
-      end do
-      call nccheck_incr(nf90_put_var(ncid_out, slc2varid, sngl(inc2dout), &
-                           start = ncstart(1:2), count = nccount(1:2)))
-      ! slc3 increment
-      inc(:) = zero
-      if (slc3_ind > 0) then
-         call copyfromgrdin(grdin(:,levels(n3d)+slc3_ind,nb,ne),inc)
-      endif
-      inc2d(:,:) = reshape(inc,(/nlons,nlats/))
-      inc2dout=0.
-      do j=1,nlats
-         do i = 1, nlons
-            if (mask(i,nlats-j+1) .EQ. 1) inc2dout(i,nlats-j+1) = inc2d(i,j)
-         end do
-      end do
-      call nccheck_incr(nf90_put_var(ncid_out, slc3varid, sngl(inc2dout), &
-                           start = ncstart(1:2), count = nccount(1:2)))
-      ! slc4 increment
-      inc(:) = zero
-      if (slc4_ind > 0) then
-         call copyfromgrdin(grdin(:,levels(n3d)+slc4_ind,nb,ne),inc)
-      endif
-      inc2d(:,:) = reshape(inc,(/nlons,nlats/))
-      inc2dout=0.
-      do j=1,nlats
-         do i = 1, nlons
-            if (mask(i,nlats-j+1) .EQ. 1) inc2dout(i,nlats-j+1) = inc2d(i,j)
-         end do
-      end do
-      call nccheck_incr(nf90_put_var(ncid_out, slc4varid, sngl(inc2dout), &
-                        start = ncstart(1:2), count = nccount(1:2)))
+     call read_vardata(dsfg, 'vtype', values_2d, errcode=iret)
+
+     mask = 0
+     do j=1,nlats
+       do i = 1, nlons
+         if (values_2d(i,j) .ne. 15 .and. values_2d(i,j) .ne. 0) then
+           mask(i,nlats-j+1) = 1
+         endif
+       enddo
+     enddo
+
+     call read_vardata(dsfg, 'snowt1', values_2d, errcode=iret)
+     do j=1,nlats
+       do i = 1, nlons
+         if (values_2d(i,j) > 180.0 .and. values_2d(i,j) < 274.0 .and. mask(i,nlats-j+1) == 1) then
+           mask(i,nlats-j+1) = -1
+         endif
+       enddo
+     enddo
+
+     call read_vardata(dsfg, 'snowt2', values_2d, errcode=iret)
+     do j=1,nlats
+       do i = 1, nlons
+         if (values_2d(i,j) > 180.0 .and. values_2d(i,j) < 274.0 .and. mask(i,nlats-j+1) == -1) then
+           mask(i,nlats-j+1) = -2
+         endif
+       enddo
+     enddo
+
+     call read_vardata(dsfg, 'snowt3', values_2d, errcode=iret)
+     do j=1,nlats
+       do i = 1, nlons
+         if (values_2d(i,j) > 180.0 .and. values_2d(i,j) < 274.0 .and. mask(i,nlats-j+1) == -2) then
+           mask(i,nlats-j+1) = -3
+         endif
+       enddo
+     enddo
+
+     call nccheck_incr(nf90_put_var(ncid_out, maskvarid, mask, &
+                       start = ncstart(1:2), count = nccount(1:2)))
+
+     allocate(inc2d(nlons,nlats))
+     allocate(inc2dout(nlons,nlats))
+
+     ! tmp2m increment
+     inc(:) = zero
+     if (tmp2m_ind > 0) then
+       call copyfromgrdin(grdin(:,levels(n3d) + tmp2m_ind,nb,ne),inc)
+     endif
+     inc2d(:,:) = reshape(inc,(/nlons,nlats/))
+     do j=1,nlats
+       inc2dout(:,nlats-j+1) = inc2d(:,j)
+     end do
+     call nccheck_incr(nf90_put_var(ncid_out, tmp2mvarid, sngl(inc2dout), &
+                         start = ncstart(1:2), count = nccount(1:2)))
+     ! spfh2m increment
+     inc(:) = zero
+     if (spfh2m_ind > 0) then
+       call copyfromgrdin(grdin(:,levels(n3d)+spfh2m_ind,nb,ne),inc)
+     endif
+     inc2d(:,:) = reshape(inc,(/nlons,nlats/))
+     do j=1,nlats
+       inc2dout(:,nlats-j+1) = inc2d(:,j)
+     end do
+     call nccheck_incr(nf90_put_var(ncid_out, spfh2mvarid, sngl(inc2dout), &
+                         start = ncstart(1:2), count = nccount(1:2)))
+     ! soilt1 increment
+     inc(:) = zero
+     if (soilt1_ind > 0) then
+       call copyfromgrdin(grdin(:,levels(n3d)+soilt1_ind,nb,ne),inc)
+     endif
+     inc2d(:,:) = reshape(inc,(/nlons,nlats/))
+     inc2dout=0.
+     do j=1,nlats
+       do i = 1, nlons
+           if (mask(i,nlats-j+1) .EQ. 1) inc2dout(i,nlats-j+1) = inc2d(i,j)
+       enddo
+     end do
+     call nccheck_incr(nf90_put_var(ncid_out, soilt1varid, sngl(inc2dout), &
+                         start = ncstart(1:2), count = nccount(1:2)))
+     ! soilt2 increment
+     inc(:) = zero
+     if (soilt2_ind > 0) then
+       call copyfromgrdin(grdin(:,levels(n3d)+soilt2_ind,nb,ne),inc)
+     endif
+     inc2d(:,:) = reshape(inc,(/nlons,nlats/))
+     inc2dout=0.
+     do j=1,nlats
+       do i = 1, nlons
+           if (mask(i,nlats-j+1) .EQ. 1) inc2dout(i,nlats-j+1) = inc2d(i,j)
+       enddo
+     end do
+     call nccheck_incr(nf90_put_var(ncid_out, soilt2varid, sngl(inc2dout), &
+                         start = ncstart(1:2), count = nccount(1:2)))
+     ! soilt3 increment
+     inc(:) = zero
+     if (soilt3_ind > 0) then
+       call copyfromgrdin(grdin(:,levels(n3d)+soilt3_ind,nb,ne),inc)
+     endif
+     inc2d(:,:) = reshape(inc,(/nlons,nlats/))
+     inc2dout=0.
+     do j=1,nlats
+       do i = 1, nlons
+           if (mask(i,nlats-j+1) .EQ. 1) inc2dout(i,nlats-j+1) = inc2d(i,j)
+       enddo
+     end do
+     call nccheck_incr(nf90_put_var(ncid_out, soilt3varid, sngl(inc2dout), &
+                         start = ncstart(1:2), count = nccount(1:2)))
+     ! soilt4 increment
+     inc(:) = zero
+     if (soilt4_ind > 0) then
+       call copyfromgrdin(grdin(:,levels(n3d)+soilt4_ind,nb,ne),inc)
+     endif
+     inc2d(:,:) = reshape(inc,(/nlons,nlats/))
+     inc2dout=0.
+     do j=1,nlats
+       do i = 1, nlons
+           if (mask(i,nlats-j+1) .EQ. 1) inc2dout(i,nlats-j+1) = inc2d(i,j)
+       enddo
+     end do
+     call nccheck_incr(nf90_put_var(ncid_out, soilt4varid, sngl(inc2dout), &
+                         start = ncstart(1:2), count = nccount(1:2)))
+     ! slc1 increment
+     inc(:) = zero
+     if (slc1_ind > 0) then
+       call copyfromgrdin(grdin(:,levels(n3d)+slc1_ind,nb,ne),inc)
+     endif
+     inc2d(:,:) = reshape(inc,(/nlons,nlats/))
+     inc2dout=0.
+     do j=1,nlats
+        do i = 1, nlons
+           if (mask(i,nlats-j+1) .EQ. 1) inc2dout(i,nlats-j+1) = inc2d(i,j)
+        end do
+     end do
+     call nccheck_incr(nf90_put_var(ncid_out, slc1varid, sngl(inc2dout), &
+                         start = ncstart(1:2), count = nccount(1:2)))
+     ! slc2 increment
+     inc(:) = zero
+     if (slc2_ind > 0) then
+       call copyfromgrdin(grdin(:,levels(n3d)+slc2_ind,nb,ne),inc)
+     endif
+     inc2d(:,:) = reshape(inc,(/nlons,nlats/))
+     inc2dout=0.
+     do j=1,nlats
+        do i = 1, nlons
+           if (mask(i,nlats-j+1) .EQ. 1) inc2dout(i,nlats-j+1) = inc2d(i,j)
+        end do
+     end do
+     call nccheck_incr(nf90_put_var(ncid_out, slc2varid, sngl(inc2dout), &
+                         start = ncstart(1:2), count = nccount(1:2)))
+     ! slc3 increment
+     inc(:) = zero
+     if (slc3_ind > 0) then
+       call copyfromgrdin(grdin(:,levels(n3d)+slc3_ind,nb,ne),inc)
+     endif
+     inc2d(:,:) = reshape(inc,(/nlons,nlats/))
+     inc2dout=0.
+     do j=1,nlats
+        do i = 1, nlons
+           if (mask(i,nlats-j+1) .EQ. 1) inc2dout(i,nlats-j+1) = inc2d(i,j)
+        end do
+     end do
+     call nccheck_incr(nf90_put_var(ncid_out, slc3varid, sngl(inc2dout), &
+                         start = ncstart(1:2), count = nccount(1:2)))
+     ! slc4 increment
+     inc(:) = zero
+     if (slc4_ind > 0) then
+       call copyfromgrdin(grdin(:,levels(n3d)+slc4_ind,nb,ne),inc)
+     endif
+     inc2d(:,:) = reshape(inc,(/nlons,nlats/))
+     inc2dout=0.
+     do j=1,nlats
+        do i = 1, nlons
+           if (mask(i,nlats-j+1) .EQ. 1) inc2dout(i,nlats-j+1) = inc2d(i,j)
+        end do
+     end do
+     call nccheck_incr(nf90_put_var(ncid_out, slc4varid, sngl(inc2dout), &
+                       start = ncstart(1:2), count = nccount(1:2)))
+     ! snowt1 increment
+     inc(:) = zero
+     if (snowt1_ind > 0) then
+       call copyfromgrdin(grdin(:,levels(n3d)+snowt1_ind,nb,ne),inc)
+     endif
+     inc2d(:,:) = reshape(inc,(/nlons,nlats/))
+     inc2dout=0.
+     do j=1,nlats
+       do i = 1, nlons
+         if (mask(i,nlats-j+1) == -1 .OR. mask(i,nlats-j+1) == -2 .OR. mask(i,nlats-j+1) == -3) then
+           inc2dout(i,nlats-j+1) = inc2d(i,j)
+         endif
+       enddo
+     enddo
+     call nccheck_incr(nf90_put_var(ncid_out, snowt1varid, sngl(inc2dout), &
+                         start = ncstart(1:2), count = nccount(1:2)))
+     ! snowt2 increment
+     inc(:) = zero
+     if (snowt2_ind > 0) then
+       call copyfromgrdin(grdin(:,levels(n3d)+snowt2_ind,nb,ne),inc)
+     endif
+     inc2d(:,:) = reshape(inc,(/nlons,nlats/))
+     inc2dout=0.
+     do j=1,nlats
+       do i = 1, nlons
+         if (mask(i,nlats-j+1) == -2 .OR. mask(i,nlats-j+1) == -3) then
+           inc2dout(i,nlats-j+1) = inc2d(i,j)
+         endif
+       enddo
+     enddo
+     call nccheck_incr(nf90_put_var(ncid_out, snowt2varid, sngl(inc2dout), &
+                         start = ncstart(1:2), count = nccount(1:2)))
+     ! snowt3 increment
+     inc(:) = zero
+     if (snowt3_ind > 0) then
+       call copyfromgrdin(grdin(:,levels(n3d)+snowt3_ind,nb,ne),inc)
+     endif
+     inc2d(:,:) = reshape(inc,(/nlons,nlats/))
+     inc2dout=0.
+     do j=1,nlats
+       do i = 1, nlons
+         if (mask(i,nlats-j+1) == -3) then
+           inc2dout(i,nlats-j+1) = inc2d(i,j)
+         endif
+       enddo
+     enddo
+     call nccheck_incr(nf90_put_var(ncid_out, snowt3varid, sngl(inc2dout), &
+                         start = ncstart(1:2), count = nccount(1:2)))
 
      call close_dataset(dsfg,errcode=iret)
      if (iret/=0) then
@@ -4443,6 +4577,8 @@
                      slc3varid, slc4varid, maskvarid
   integer(i_kind) :: tmp2m_ind, spfh2m_ind, soilt1_ind, soilt2_ind,soilt3_ind, &
                      soilt4_ind,slc1_ind, slc2_ind, slc3_ind, slc4_ind 
+  integer(i_kind) :: snowt1varid, snowt2varid, snowt3varid
+  integer(i_kind) :: snowt1_ind, snowt2_ind, snowt3_ind
   integer(i_kind) :: iadateout
 
   ! fixed fields such as lat, lon, levs
@@ -4988,6 +5124,9 @@
    slc3_ind = getindex(vars2d, 'sl3')
    soilt4_ind = getindex(vars2d, 'st4')
    slc4_ind = getindex(vars2d, 'sl4')
+   snowt1_ind = getindex(vars2d, 'snt1')
+   snowt2_ind = getindex(vars2d, 'snt2')
+   snowt3_ind = getindex(vars2d, 'snt3')
 
    ! loop through times and do the read
    ne = 1
@@ -5025,6 +5164,9 @@
      call nccheck_incr(nf90_def_var(ncid_out, "slc2_inc", nf90_real, dimids2,slc2varid))
      call nccheck_incr(nf90_def_var(ncid_out, "slc3_inc", nf90_real, dimids2,slc3varid))
      call nccheck_incr(nf90_def_var(ncid_out, "slc4_inc", nf90_real, dimids2,slc4varid))
+     call nccheck_incr(nf90_def_var(ncid_out, "snowt1_inc", nf90_real, dimids2, snowt1varid))
+     call nccheck_incr(nf90_def_var(ncid_out, "snowt2_inc", nf90_real, dimids2, snowt2varid))
+     call nccheck_incr(nf90_def_var(ncid_out, "snowt3_inc", nf90_real, dimids2, snowt3varid))
      call nccheck_incr(nf90_def_var(ncid_out, "soilsnow_mask", nf90_int,dimids2, maskvarid))
      ! place global attributes to serial calc_increment output
      call nccheck_incr(nf90_put_att(ncid_out, nf90_global, "source", "GSI EnKF"))
@@ -5051,41 +5193,55 @@
       end do
       call nccheck_incr(nf90_put_var(ncid_out, latvarid, deglats, &
                            start = (/1/), count = (/nlats/)))
-                           
-      ! construct mask (1 - soil; 2 - snow over land; and 0 - not soil)
+      ! construct mask
+      !  -3: land covered with 3 snow layers
+      !  -2: land covered with 2 snow layers
+      !  -1: land covered with 1 snow layer
+      !   0: ocean/glacier
+      !   1: snow-free land
       ! note: same logic/threshold used in global_cycle to produce
-      ! mask on model grid. Set land to 1.
-      call read_vardata(dsfg, 'land', values_2d, errcode=iret)  !sea-land-ice mask 0-sea, 1-land, 2-ice
+      ! mask on model grid.
+
+      call read_vardata(dsfg, 'vtype', values_2d, errcode=iret)
       mask = 0
       do j=1,nlats
-         do i = 1, nlons
-            if (nint(values_2d(i,j)) .EQ. 1) then
+        do i = 1, nlons
+          if (values_2d(i,j) .ne. 15 .and. values_2d(i,j) .ne. 0) then
             mask(i,nlats-j+1) = 1
-            endif
-         end do
-      end do
-      ! set snow to 2
-      call read_vardata(dsfg, 'weasd', values_2d, errcode=iret)
+          endif
+        enddo
+      enddo
+
+      call read_vardata(dsfg, 'snowt1', values_2d, errcode=iret)
       do j=1,nlats
-         do i = 1, nlons
-            if (values_2d(i,j) .GT. 0.001) then
-            mask(i,nlats-j+1) = 2
-            endif
-         end do
+        do i = 1, nlons
+          if (values_2d(i,j) > 180.0 .and. values_2d(i,j) < 274.0 .and. mask(i,nlats-j+1) == 1) then
+            mask(i,nlats-j+1) = -1
+          endif
+        enddo
       end do
-      ! set non-soil (glacier and water) to 0 
-      call read_vardata(dsfg, 'vtype', values_2d, errcode=iret)  !vegetation type in integer, missing/fill value 9.99e+20f
+
+      call read_vardata(dsfg, 'snowt2', values_2d, errcode=iret)
       do j=1,nlats
-         do i = 1, nlons
-            if ((nint(values_2d(i,j)) .EQ. 0) .OR. (nint(values_2d(i,j)) .EQ. 15) ) then
-            mask(i,nlats-j+1) = 0
-            endif
-         end do
+        do i = 1, nlons
+          if (values_2d(i,j) > 180.0 .and. values_2d(i,j) < 274.0 .and. mask(i,nlats-j+1) == -1) then
+            mask(i,nlats-j+1) = -2
+          endif
+        enddo
       end do
-      
+
+      call read_vardata(dsfg, 'snowt3', values_2d, errcode=iret)
+      do j=1,nlats
+        do i = 1, nlons
+          if (values_2d(i,j) > 180.0 .and. values_2d(i,j) < 274.0 .and. mask(i,nlats-j+1) == -2) then
+            mask(i,nlats-j+1) = -3
+          endif
+        enddo
+      end do
+
       call nccheck_incr(nf90_put_var(ncid_out, maskvarid, mask, &
                         start = ncstart(1:2), count = nccount(1:2)))
-                        
+
       allocate(inc2d(nlons,nlats))
       allocate(inc2dout(nlons,nlats))
 
@@ -5163,7 +5319,7 @@
       do j=1,nlats
          do i = 1, nlons
             if (mask(i,nlats-j+1) .EQ. 1) inc2dout(i,nlats-j+1) = inc2d(i,j)
-         end do
+         enddo
       end do
       call nccheck_incr(nf90_put_var(ncid_out, soilt4varid, sngl(inc2dout), &
                            start = ncstart(1:2), count = nccount(1:2)))
@@ -5223,6 +5379,54 @@
       end do
       call nccheck_incr(nf90_put_var(ncid_out, slc4varid, sngl(inc2dout), &
                         start = ncstart(1:2), count = nccount(1:2)))
+      ! snowt1 increment
+      inc(:) = zero
+      if (snowt1_ind > 0) then
+        call copyfromgrdin(grdin(:,levels(n3d)+snowt1_ind,nb,ne),inc)
+      endif
+      inc2d(:,:) = reshape(inc,(/nlons,nlats/))
+      inc2dout=0.
+      do j=1,nlats
+        do i = 1, nlons
+          if (mask(i,nlats-j+1) == -1 .OR. mask(i,nlats-j+1) == -2 .OR. mask(i,nlats-j+1) == -3) then
+            inc2dout(i,nlats-j+1) = inc2d(i,j)
+          end if
+        enddo
+      end do
+      call nccheck_incr(nf90_put_var(ncid_out, snowt1varid, sngl(inc2dout), &
+                          start = ncstart(1:2), count = nccount(1:2)))
+      ! snowt2 increment
+      inc(:) = zero
+      if (snowt2_ind > 0) then
+        call copyfromgrdin(grdin(:,levels(n3d)+snowt2_ind,nb,ne),inc)
+      endif
+      inc2d(:,:) = reshape(inc,(/nlons,nlats/))
+      inc2dout=0.
+      do j=1,nlats
+        do i = 1, nlons
+          if (mask(i,nlats-j+1) == -2 .OR. mask(i,nlats-j+1) == -3) then
+            inc2dout(i,nlats-j+1) = inc2d(i,j)
+          end if
+        enddo
+      end do
+      call nccheck_incr(nf90_put_var(ncid_out, snowt2varid, sngl(inc2dout), &
+                          start = ncstart(1:2), count = nccount(1:2)))
+      ! snowt3 increment
+      inc(:) = zero
+      if (snowt3_ind > 0) then
+        call copyfromgrdin(grdin(:,levels(n3d)+snowt3_ind,nb,ne),inc)
+      endif
+      inc2d(:,:) = reshape(inc,(/nlons,nlats/))
+      inc2dout=0.
+      do j=1,nlats
+        do i = 1, nlons
+          if (mask(i,nlats-j+1) == -3) then
+            inc2dout(i,nlats-j+1) = inc2d(i,j)
+          end if
+        enddo
+      end do
+      call nccheck_incr(nf90_put_var(ncid_out, snowt3varid, sngl(inc2dout), &
+                         start = ncstart(1:2), count = nccount(1:2)))
 
       call close_dataset(dsfg,errcode=iret)
       if (iret/=0) then
@@ -5281,6 +5485,7 @@
   integer(i_kind) :: ps_ind, pst_ind, sst_ind
   integer(i_kind) :: tmp2m_ind, spfh2m_ind, soilt1_ind, soilt2_ind, soilt3_ind
   integer(i_kind) :: soilt4_ind,slc1_ind, slc2_ind, slc3_ind, slc4_ind
+  integer(i_kind) :: snowt1_ind, snowt2_ind, snowt3_ind
 
  ! atmos file variables
   u_ind   = getindex(vars3d, 'u')   !< indices in the state or control var arrays
@@ -5317,11 +5522,15 @@
   slc3_ind = getindex(vars2d, 'sl3')
   soilt4_ind = getindex(vars2d, 'st4')
   slc4_ind = getindex(vars2d, 'sl4')
+  snowt1_ind = getindex(vars2d, 'snt1')
+  snowt2_ind = getindex(vars2d, 'snt2')
+  snowt3_ind = getindex(vars2d, 'snt3')
 
   sfc_file = ( tmp2m_ind > 0 .or. spfh2m_ind > 0 .or. soilt1_ind > 0 .or. &
        slc1_ind > 0 .or. soilt2_ind > 0 .or. slc2_ind > 0 .or.    &
        soilt3_ind > 0 .or. slc3_ind > 0 .or. soilt4_ind > 0 .or.  &
-       slc4_ind  > 0 )
+       slc4_ind  > 0 .or. snowt1_ind > 0 .or. snowt2_ind > 0 .or.  &
+       snowt3_ind > 0)
 
  end subroutine set_ncio_file_flags
 

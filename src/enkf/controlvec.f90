@@ -44,7 +44,7 @@ module controlvec
 
 use mpimod, only: mpi_comm_world
 use mpisetup, only: mpi_real4,mpi_sum,mpi_comm_io,mpi_in_place,numproc,nproc,&
-                mpi_integer,mpi_wtime,mpi_status,mpi_real8
+                mpi_integer,mpi_wtime,mpi_status,mpi_real8,mpi_max
 
 use gridio,    only: readgriddata, readgriddata_pnc, writegriddata, writegriddata_pnc, &
                      writeincrement, writeincrement_pnc
@@ -191,9 +191,11 @@ subroutine read_control()
 ! read ensemble members on IO tasks
 implicit none
 real(r_double)  :: t1,t2
-integer(i_kind) :: nb,nlev,ne
+integer(i_kind) :: nb,nlev,ne,i
 integer(i_kind) :: q_ind
 integer(i_kind) :: ierr
+integer(i_kind) :: snowt1_ind, snowt2_ind, snowt3_ind
+integer(i_kind), dimension(npts, nbackgrounds) :: zero_mask, global_zero_mask
 
 ! must at least nanals tasks allocated.
 if (numproc < ntasks_io) then
@@ -247,6 +249,135 @@ if (nproc <= ntasks_io-1) then
 
 endif
 
+!+ygan
+! Mask out all ensemble members for the grid if any member has an unrealistic/missing snow temperature or an upper snow layer
+snowt1_ind = getindex(cvars2d, 'snt1')
+snowt2_ind = getindex(cvars2d, 'snt2')
+snowt3_ind = getindex(cvars2d, 'snt3')
+
+if (snowt1_ind > 0 .and. snowt2_ind > 0 .and. snowt3_ind > 0) then
+  ! mask first layer snow temperature
+  zero_mask = 0
+  if (nproc <= ntasks_io-1) then
+    do nb = 1, nbackgrounds
+      do i = 1, npts
+        if (any(grdin(i, clevels(nc3d) + snowt1_ind, nb, :) < 180.0) .or. &
+            any(grdin(i, clevels(nc3d) + snowt1_ind, nb, :) > 274.0) .or. &
+            any(grdin(i, clevels(nc3d) + snowt2_ind, nb, :) > 180.0 .and. &
+                grdin(i, clevels(nc3d) + snowt2_ind, nb, :) < 274.0)) then
+          zero_mask(i,nb) = 1
+        end if
+      end do
+    end do
+  end if
+
+  do nb = 1, nbackgrounds
+    call mpi_allreduce(zero_mask(:, nb), global_zero_mask(:, nb), npts, mpi_integer, mpi_max, mpi_comm_world, ierr)
+  end do
+
+  if (nproc <= ntasks_io-1) then
+    do nb = 1, nbackgrounds
+      do i = 1, npts
+        if (global_zero_mask(i,nb) == 1) then
+          grdin(i, clevels(nc3d) + snowt1_ind, nb, :) = 0.0
+        end if
+      end do
+      if (nproc == 0) then
+        print *,'--------------------'
+        print *,'time level ', nb
+        if (any(grdin(:, clevels(nc3d) + snowt1_ind, nb, :) /= 0.0)) then
+          write(*,'(A, F5.1)') 'snowt1: min = ', minval(grdin(:, clevels(nc3d) + snowt1_ind, nb, :), &
+                                                        grdin(:, clevels(nc3d) + snowt1_ind, nb, :) /= 0.0)
+          write(*,'(A, F5.1)') 'snowt1: max = ', maxval(grdin(:, clevels(nc3d) + snowt1_ind, nb, :))
+        else
+          write(*, '(A)') 'All snowt1 values are zero'
+        end if
+      end if
+    end do
+  end if
+
+  ! mask second layer snow temperature
+  zero_mask = 0
+  if (nproc <= ntasks_io-1) then
+    do nb = 1, nbackgrounds
+      do i = 1, npts
+        if (any(grdin(i, clevels(nc3d) + snowt2_ind, nb, :) < 180.0) .or. &
+            any(grdin(i, clevels(nc3d) + snowt2_ind, nb, :) > 274.0) .or. &
+            any(grdin(i, clevels(nc3d) + snowt3_ind, nb, :) > 180.0 .and. &
+                grdin(i, clevels(nc3d) + snowt3_ind, nb, :) < 274.0)) then
+          zero_mask(i,nb) = 1
+        end if
+      end do
+    end do
+  end if
+
+  do nb = 1, nbackgrounds
+    call mpi_allreduce(zero_mask(:, nb), global_zero_mask(:, nb), npts, mpi_integer, mpi_max, mpi_comm_world, ierr)
+  end do
+
+  if (nproc <= ntasks_io-1) then
+    do nb = 1, nbackgrounds
+      do i = 1, npts
+        if (global_zero_mask(i,nb) == 1) then
+          grdin(i, clevels(nc3d) + snowt2_ind, nb, :) = 0.0
+        end if
+      end do
+      if (nproc == 0) then
+        print *,'--------------------'
+        print *,'time level ', nb
+        if (any(grdin(:, clevels(nc3d) + snowt2_ind, nb, :) /= 0.0)) then
+          write(*,'(A, F5.1)') 'snowt2: min = ', minval(grdin(:, clevels(nc3d) + snowt2_ind, nb, :), &
+                                                        grdin(:, clevels(nc3d) + snowt2_ind, nb, :) /= 0.0)
+          write(*,'(A, F5.1)') 'snowt2: max = ', maxval(grdin(:, clevels(nc3d) + snowt2_ind, nb, :))
+        else
+          write(*, '(A)') 'All snowt2 values are zero'
+        end if
+      end if
+    end do
+  end if
+
+  ! mask third layer snow temperature
+  zero_mask = 0
+  if (nproc <= ntasks_io-1) then
+    do nb = 1, nbackgrounds
+      do i = 1, npts
+        if (any(grdin(i, clevels(nc3d) + snowt3_ind, nb, :) < 180.0) .or. &
+            any(grdin(i, clevels(nc3d) + snowt3_ind, nb, :) > 274.0)) then
+          zero_mask(i,nb) = 1
+        end if
+      end do
+    end do
+  end if
+
+  do nb = 1, nbackgrounds
+    call mpi_allreduce(zero_mask(:, nb), global_zero_mask(:, nb), npts, mpi_integer, mpi_max, mpi_comm_world, ierr)
+  end do
+
+  if (nproc <= ntasks_io-1) then
+    do nb = 1, nbackgrounds
+      do i = 1, npts
+        if (global_zero_mask(i,nb) == 1) then
+          grdin(i, clevels(nc3d) + snowt3_ind, nb, :) = 0.0
+        end if
+      end do
+      if (nproc == 0) then
+        print *,'--------------------'
+        print *,'time level ', nb
+        if (any(grdin(:, clevels(nc3d) + snowt3_ind, nb, :) /= 0.0)) then
+          write(*,'(A, F5.1)') 'snowt3: min = ', minval(grdin(:, clevels(nc3d) + snowt3_ind, nb, :), &
+                                                        grdin(:, clevels(nc3d) + snowt3_ind, nb, :) /= 0.0)
+          write(*,'(A, F5.1)') 'snowt3: max = ', maxval(grdin(:, clevels(nc3d) + snowt3_ind, nb, :))
+        else
+          write(*, '(A)') 'All snowt3 values are zero'
+        end if
+      end if
+    end do
+  end if
+else
+  print *, 'Error: Some/all of the variables snt1, snt2, and snt3 are not defined in control_vector_enkf'
+  print *, 'Add snt1, snt2, and snt3 in control_vector_enkf to get correct snow temperature increments'
+endif
+!.ygan
 end subroutine read_control
 
 subroutine write_control(no_inflate_flag)
